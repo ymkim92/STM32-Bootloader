@@ -66,11 +66,11 @@ static void OPENBL_SPI_Init(void)
   SPI_InitStruct.CRCPoly           = 7U;
 
   LL_SPI_Init(SPIx, &SPI_InitStruct);
-  LL_SPI_SetFIFOThreshold(SPIx, LL_SPI_FIFO_TH_01DATA);
-
-  /* In case the underrun flag is set, we send a busy byte */
-  LL_SPI_SetUDRConfiguration(SPIx, LL_SPI_UDR_CONFIG_REGISTER_PATTERN);
-  LL_SPI_SetUDRPattern(SPIx, SPI_BUSY_BYTE);
+//  LL_SPI_SetFIFOThreshold(SPIx, LL_SPI_FIFO_TH_01DATA);
+//
+//  /* In case the underrun flag is set, we send a busy byte */
+//  LL_SPI_SetUDRConfiguration(SPIx, LL_SPI_UDR_CONFIG_REGISTER_PATTERN);
+//  LL_SPI_SetUDRPattern(SPIx, SPI_BUSY_BYTE);
 
   HAL_NVIC_SetPriority(SPIx_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(SPIx_IRQn);
@@ -219,24 +219,24 @@ __ramfunc uint8_t OPENBL_SPI_ReadByte(void)
 __attribute__((section(".ramfunc"))) uint8_t OPENBL_SPI_ReadByte(void)
 #endif /* (__ICCARM__) */
 {
-  uint8_t data;
+  uint8_t data = 0;
 
-  /* Wait until SPI Rx buffer not empty interrupt */
-  while (SpiRxNotEmpty == 0U)
-  {
-    /* Refresh IWDG: reload counter */
-    IWDG->KR = IWDG_KEY_RELOAD;
-  }
-
-  /* Reset the RX not empty token */
-  SpiRxNotEmpty = 0U;
-
-  /* Read the SPI data register */
-  data = SPIx->RXDR;
-
-  /* Enable the interrupt of Rx not empty buffer */
-  SPIx->IER |= SPI_IER_RXPIE;
-
+//  /* Wait until SPI Rx buffer not empty interrupt */
+//  while (SpiRxNotEmpty == 0U)
+//  {
+//    /* Refresh IWDG: reload counter */
+//    IWDG->KR = IWDG_KEY_RELOAD;
+//  }
+//
+//  /* Reset the RX not empty token */
+//  SpiRxNotEmpty = 0U;
+//
+//  /* Read the SPI data register */
+//  data = SPIx->RXDR;
+//
+//  /* Enable the interrupt of Rx not empty buffer */
+//  SPIx->IER |= SPI_IER_RXPIE;
+//
   return data;
 }
 
@@ -251,24 +251,24 @@ __ramfunc void OPENBL_SPI_SendBusyByte(void)
 __attribute__((section(".ramfunc"))) void OPENBL_SPI_SendBusyByte(void)
 #endif /* (__ICCARM__) */
 {
-  /* Wait until SPI Rx buffer not empty interrupt */
-  while (SpiRxNotEmpty == 0U)
-  {
-    /* Refresh IWDG: reload counter */
-    IWDG->KR = IWDG_KEY_RELOAD;
-  }
-
-  /* Reset the RX not empty token */
-  SpiRxNotEmpty = 0U;
-
-  /* Transmit the busy byte */
-  *((__IO uint8_t *)&SPIx->TXDR) = SPI_BUSY_BYTE;
-
-  /* Read bytes from the host to avoid the overrun */
-  OPENBL_SPI_ClearFlag_OVR();
-
-  /* Enable the interrupt of Rx not empty buffer */
-  SPIx->IER |= SPI_IER_RXPIE;
+//  /* Wait until SPI Rx buffer not empty interrupt */
+//  while (SpiRxNotEmpty == 0U)
+//  {
+//    /* Refresh IWDG: reload counter */
+//    IWDG->KR = IWDG_KEY_RELOAD;
+//  }
+//
+//  /* Reset the RX not empty token */
+//  SpiRxNotEmpty = 0U;
+//
+//  /* Transmit the busy byte */
+//  *((__IO uint8_t *)&SPIx->TXDR) = SPI_BUSY_BYTE;
+//
+//  /* Read bytes from the host to avoid the overrun */
+//  OPENBL_SPI_ClearFlag_OVR();
+//
+//  /* Enable the interrupt of Rx not empty buffer */
+//  SPIx->IER |= SPI_IER_RXPIE;
 }
 
 /**
@@ -281,15 +281,15 @@ __ramfunc void OPENBL_SPI_SendByte(uint8_t Byte)
 __attribute__((section(".ramfunc"))) void OPENBL_SPI_SendByte(uint8_t Byte)
 #endif /* (__ICCARM__) */
 {
-  /* Wait until SPI transmit buffer is empty */
-  while ((SPIx->SR & SPI_SR_TXP) == 0)
-  {}
-
-  /* Transmit the data */
-  *((__IO uint8_t *)&SPIx->TXDR) = Byte;
-
-  /* Clear underrun flag */
-  SET_BIT(SPIx->IFCR, SPI_IFCR_UDRC);
+//  /* Wait until SPI transmit buffer is empty */
+//  while ((SPIx->SR & SPI_SR_TXP) == 0)
+//  {}
+//
+//  /* Transmit the data */
+//  *((__IO uint8_t *)&SPIx->TXDR) = Byte;
+//
+//  /* Clear underrun flag */
+//  SET_BIT(SPIx->IFCR, SPI_IFCR_UDRC);
 }
 
 /**
@@ -323,24 +323,24 @@ __attribute__((section(".ramfunc"))) void OPENBL_SPI_IRQHandler(void)
 #endif /* (__ICCARM__) */
 {
   /* Check that SPI Rx buffer not empty interrupt has been raised */
-  if (((SPIx->SR & SPI_SR_OVR) == RESET)
-      && ((SPIx->SR & SPI_SR_RXP) != RESET)
-      && ((SPIx->IER & SPI_IER_RXPIE) != RESET))
-  {
-    /* Set the RX not empty token */
-    SpiRxNotEmpty = 1U;
-
-    /* Disable the interrupt of Rx not empty buffer */
-    SPIx->IER &= ~SPI_IER_RXPIE;
-  }
-
-  if (((SPIx->SR & SPI_SR_OVR) != RESET)
-      && ((SPIx->SR & SPI_SR_RXP) != RESET)
-      && ((SPIx->IER & SPI_IER_RXPIE) != RESET))
-  {
-    /* Read bytes from the host to avoid the overrun */
-    OPENBL_SPI_ClearFlag_OVR();
-  }
+//  if (((SPIx->SR & SPI_SR_OVR) == RESET)
+//      && ((SPIx->SR & SPI_SR_RXP) != RESET)
+//      && ((SPIx->IER & SPI_IER_RXPIE) != RESET))
+//  {
+//    /* Set the RX not empty token */
+//    SpiRxNotEmpty = 1U;
+//
+//    /* Disable the interrupt of Rx not empty buffer */
+//    SPIx->IER &= ~SPI_IER_RXPIE;
+//  }
+//
+//  if (((SPIx->SR & SPI_SR_OVR) != RESET)
+//      && ((SPIx->SR & SPI_SR_RXP) != RESET)
+//      && ((SPIx->IER & SPI_IER_RXPIE) != RESET))
+//  {
+//    /* Read bytes from the host to avoid the overrun */
+//    OPENBL_SPI_ClearFlag_OVR();
+//  }
 }
 
 /**
@@ -372,7 +372,9 @@ __ramfunc void OPENBL_SPI_ClearFlag_OVR(void)
 __attribute__((section(".ramfunc"))) void OPENBL_SPI_ClearFlag_OVR(void)
 #endif /* (__ICCARM__) */
 {
-  SET_BIT(SPIx->IFCR, SPI_IFCR_OVRC);
+//  SET_BIT(SPIx->IFCR, SPI_IFCR_OVRC);
+    LL_SPI_ClearFlag_OVR(SPIx);
+
 }
 
 /**

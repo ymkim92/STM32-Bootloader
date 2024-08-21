@@ -25,8 +25,8 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f767xx_ll_spi.h"
-#include "stm32f767xx_ll_usart.h"
+#include "stm32f7xx_ll_spi.h"
+#include "stm32f7xx_ll_usart.h"
 
 /* ------------------------- Definitions for USART -------------------------- */
 #define USARTx USART3
@@ -58,6 +58,9 @@ extern "C" {
 #define SPIx_NSS_PIN GPIO_PIN_4
 #define SPIx_NSS_PIN_PORT GPIOA
 #define SPIx_ALTERNATE GPIO_AF5_SPI1
+
+#define MEMORIES_SUPPORTED 7U
+#define SPECIAL_CMD_MAX_NUMBER 8U
 
 #ifdef __cplusplus
 }

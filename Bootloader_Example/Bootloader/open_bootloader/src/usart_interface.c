@@ -44,7 +44,7 @@ static void OPENBL_USART_Init(void)
 {
   LL_USART_InitTypeDef USART_InitStruct;
 
-  USART_InitStruct.PrescalerValue      = LL_USART_PRESCALER_DIV1;
+//  USART_InitStruct.PrescalerValue      = LL_USART_PRESCALER_DIV1;
   USART_InitStruct.BaudRate            = 115200U;
   USART_InitStruct.DataWidth           = LL_USART_DATAWIDTH_9B;
   USART_InitStruct.StopBits            = LL_USART_STOPBITS_1;
