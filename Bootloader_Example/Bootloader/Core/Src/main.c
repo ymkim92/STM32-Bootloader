@@ -92,13 +92,23 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART3_UART_Init();
-  MX_USART2_UART_Init();
+  // TODO remove usart2
+  // MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
   // Turn ON the Green Led to tell the user that Bootloader is running
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET );    //Green LED ON
   printf("Starting Bootloader(%d.%d)\r\n", BL_Version[0], BL_Version[1] );
   //HAL_Delay(2000);   //2sec delay for nothing
 
+  OpenBootloader_Init();
+
+  /* Infinite loop */
+  while (true)
+  {
+    OpenBootloader_ProtocolDetection();
+  }
+  
+#if 0
   /* Check the GPIO for 3 seconds */
   GPIO_PinState OTA_Pin_state;
   uint32_t end_tick = HAL_GetTick() + 3000;   // from now to 3 Seconds
@@ -116,6 +126,7 @@ int main(void)
       break;
     }
   }while( 1 );
+#endif
 
   /*Start the Firmware or Application update */
   if( OTA_Pin_state == GPIO_PIN_SET )

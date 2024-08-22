@@ -2,5 +2,8 @@
     "C_Cpp.default.defines": [
         "USE_FULL_LL_DRIVER",
         "SPI6"
-    ]
+    ],
+    "files.associations": {
+        "cstdint": "c"
+    }
 }
