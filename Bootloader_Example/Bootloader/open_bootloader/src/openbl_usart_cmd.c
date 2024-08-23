@@ -831,7 +831,7 @@ OPENBL_USART_GetSpecialCmdOpCode(uint16_t *OpCode,
   uint8_t op_code[2];
   uint8_t xor ;
   uint8_t status;
-  uint8_t index;
+//  uint8_t index;
 
   /* Initialize the status variable */
   status = NACK_BYTE;

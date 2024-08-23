@@ -43,7 +43,7 @@ void OPENBL_FLASH_SetReadOutProtectionLevel(uint32_t Level);
 void OPENBL_FLASH_Write(uint32_t Address, uint8_t *Data, uint32_t DataLength);
 void OPENBL_FLASH_Unlock(void);
 ErrorStatus OPENBL_FLASH_MassErase(uint8_t *p_Data, uint32_t DataLength);
-ErrorStatus OPENBL_FLASH_Erase(uint8_t *p_Data, uint32_t DataLength);
+ErrorStatus OPENBL_FLASH_Erase(uint32_t Address, uint8_t *p_Data, uint32_t DataLength);
 ErrorStatus OPENBL_FLASH_SetWriteProtection(FunctionalState State, uint8_t *ListOfPages, uint32_t Length);
 uint32_t OPENBL_FLASH_GetReadOutProtectionLevel(void);
 void OPENBL_Enable_BusyState_Flag(void);

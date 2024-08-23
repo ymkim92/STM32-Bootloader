@@ -1,7 +1,8 @@
 {
     "C_Cpp.default.defines": [
         "USE_FULL_LL_DRIVER",
-        "SPI6"
+        "SPI6",
+        "HAL_FLASH_MODULE_ENABLED"
     ],
     "files.associations": {
         "cstdint": "c"

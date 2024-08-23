@@ -33,18 +33,8 @@
 uint32_t Flash_BusyState = FLASH_BUSY_STATE_DISABLED;
 FLASH_ProcessTypeDef FlashProcess = {};
 
-/* FLASH_ProcessTypeDef FlashProcess = {.Lock = HAL_UNLOCKED, \
-                                     .ErrorCode = HAL_FLASH_ERROR_NONE, \
-                                     .ProcedureOnGoing = 0U, \
-                                     .Address = 0U, \
-                                     .Bank = FLASH_BANK_1, \
-                                     .Page = 0U, \
-                                     .NbPagesToErase = 0U
-                                    };
-                                    */
-
 /* Private function prototypes -----------------------------------------------*/
-static void OPENBL_FLASH_ProgramQuadWord(uint32_t Address, uint32_t Data);
+static void OPENBL_FLASH_ProgramDoubleWord(uint32_t Address, uint32_t Data);
 static ErrorStatus OPENBL_FLASH_EnableWriteProtection(uint8_t *ListOfPages, uint32_t Length);
 static ErrorStatus OPENBL_FLASH_DisableWriteProtection(void);
 #if defined (__ICCARM__)
@@ -53,7 +43,7 @@ __ramfunc static HAL_StatusTypeDef OPENBL_FLASH_WaitForLastOperation(uint32_t Ti
 __ramfunc static HAL_StatusTypeDef OPENBL_FLASH_ExtendedErase(FLASH_EraseInitTypeDef *pEraseInit, uint32_t *pPageError);
 #else
 //__attribute__((section(".ramfunc"))) static HAL_StatusTypeDef OPENBL_FLASH_SendBusyState(uint32_t Timeout);
-__attribute__((section(".ramfunc"))) static HAL_StatusTypeDef OPENBL_FLASH_WaitForLastOperation(uint32_t Timeout);
+//__attribute__((section(".ramfunc"))) static HAL_StatusTypeDef OPENBL_FLASH_WaitForLastOperation(uint32_t Timeout);
 __attribute__((section(".ramfunc"))) static HAL_StatusTypeDef OPENBL_FLASH_ExtendedErase(
   FLASH_EraseInitTypeDef *pEraseInit, uint32_t *pPageError);
 #endif /* (__ICCARM__) */
@@ -127,14 +117,14 @@ void OPENBL_FLASH_Write(uint32_t Address, uint8_t *Data, uint32_t DataLength)
   uint32_t index;
   uint32_t length = DataLength;
   uint32_t remainder;
-  uint8_t remainder_data[16] = {0x0};
+  uint8_t remainder_data[8] = {0x0};
 
-  /* Check the remaining of quad-word */
-  remainder = length & 0xFU;
+  /* Check the remaining of double-word */
+  remainder = length & 0x7U;
 
   if (remainder)
   {
-    length = (length & 0xFFFFFFF0U);
+    length = (length & 0xFFFFFFF8U);
 
     /* copy the remaining bytes */
     for (index = 0U; index < remainder; index++)
@@ -143,7 +133,7 @@ void OPENBL_FLASH_Write(uint32_t Address, uint8_t *Data, uint32_t DataLength)
     }
 
     /* fill the upper bytes with 0xFF */
-    for (index = remainder; index < 16U; index++)
+    for (index = remainder; index < 8U; index++)
     {
       remainder_data[index] = 0xFF;
     }
@@ -152,14 +142,14 @@ void OPENBL_FLASH_Write(uint32_t Address, uint8_t *Data, uint32_t DataLength)
   /* Unlock the flash memory for write operation */
   OPENBL_FLASH_Unlock();
 
-  for (index = 0U; index < length; (index += 16U))
+  for (index = 0U; index < length; (index += 8U))
   {
-    OPENBL_FLASH_ProgramQuadWord((Address + index), (uint32_t)((Data + index)));
+    OPENBL_FLASH_ProgramDoubleWord((Address + index), (uint32_t)((Data + index)));
   }
 
   if (remainder)
   {
-    OPENBL_FLASH_ProgramQuadWord((Address + length), (uint32_t)((remainder_data)));
+    OPENBL_FLASH_ProgramDoubleWord((Address + length), (uint32_t)((remainder_data)));
   }
 
   /* Lock the Flash to disable the flash control register access */
@@ -343,14 +333,11 @@ ErrorStatus OPENBL_FLASH_MassErase(uint8_t *p_Data, uint32_t DataLength)
   *          - SUCCESS: Erase operation done
   *          - ERROR:   Erase operation failed or the value of one parameter is not OK
   */
-ErrorStatus OPENBL_FLASH_Erase(uint8_t *p_Data, uint32_t DataLength)
+ErrorStatus OPENBL_FLASH_Erase(uint32_t Address, uint8_t *p_Data, uint32_t DataLength)
 {
-//  uint32_t counter;
-//  uint32_t pages_number;
-//  uint32_t page_error;
-  uint32_t errors = 0U;
-  ErrorStatus status = SUCCESS;
-//  FLASH_EraseInitTypeDef erase_init_struct;
+      FLASH_EraseInitTypeDef EraseInitStruct;
+    uint32_t SectorError = 0;
+    HAL_StatusTypeDef status;
 
   /* Unlock the flash memory for erase operation */
   OPENBL_FLASH_Unlock();
@@ -358,8 +345,51 @@ ErrorStatus OPENBL_FLASH_Erase(uint8_t *p_Data, uint32_t DataLength)
   /* Clear error programming flags */
   __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
 
-//  pages_number  = (uint32_t)(*(uint16_t *)(p_Data));
-  p_Data       += 2;
+
+    // Fill EraseInit structure
+    EraseInitStruct.TypeErase = FLASH_TYPEERASE_SECTORS;
+    EraseInitStruct.VoltageRange = FLASH_VOLTAGE_RANGE_3; // Choose voltage range according to your requirements
+    EraseInitStruct.Sector = FLASH_SECTOR_5;             // Start sector to erase
+//    EraseInitStruct.NbSectors = (DataLength / FLASH_SECTOR_SIZE) + 1; // Number of sectors to erase
+
+    // Perform the erase operation
+    status = HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError);
+
+    // Lock the Flash to disable the flash control register access
+    HAL_FLASH_Lock();
+
+    // Check if erase operation was successful
+    if (status != HAL_OK)
+    {
+        // If the erase operation failed, return an error
+        return ERROR;
+    }
+
+    // If the erase operation was successful, return success
+    return SUCCESS;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//  uint32_t counter;
+//  uint32_t pages_number;
+//  uint32_t page_error;
+//  uint32_t errors = 0U;
+//  ErrorStatus status = SUCCESS;
+////  FLASH_EraseInitTypeDef erase_init_struct;
+//
+////  pages_number  = (uint32_t)(*(uint16_t *)(p_Data));
+//  p_Data       += 2;
 
 //  erase_init_struct.TypeErase = FLASH_TYPEERASE_PAGES;
 //  erase_init_struct.NbPages   = 1U;
@@ -397,19 +427,19 @@ ErrorStatus OPENBL_FLASH_Erase(uint8_t *p_Data, uint32_t DataLength)
 //    p_Data += 2;
 //  }
 
-  if (errors > 0)
-  {
-    status = ERROR;
-  }
-  else
-  {
-    status = SUCCESS;
-  }
-
-  /* Lock the Flash to disable the flash control register access */
-  OPENBL_FLASH_Lock();
-
-  return status;
+//  if (errors > 0)
+//  {
+//    status = ERROR;
+//  }
+//  else
+//  {
+//    status = SUCCESS;
+//  }
+//
+//  /* Lock the Flash to disable the flash control register access */
+//  OPENBL_FLASH_Lock();
+//
+//  return status;
 }
 
 /**
@@ -441,9 +471,9 @@ void OPENBL_Disable_BusyState_Flag(void)
   * @param  Data specifies the data to be programmed.
   * @retval None.
   */
-static void OPENBL_FLASH_ProgramQuadWord(uint32_t Address, uint32_t Data)
+static void OPENBL_FLASH_ProgramDoubleWord(uint32_t Address, uint32_t Data)
 {
-//  HAL_FLASH_Program(FLASH_TYPEPROGRAM_QUADWORD, Address, Data);
+  HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, Address, Data);
 }
 
 /**
@@ -477,14 +507,14 @@ static ErrorStatus OPENBL_FLASH_DisableWriteProtection(void)
   * @param  Timeout maximum flash operation timeout.
   * @retval HAL_Status
   */
-#if defined (__ICCARM__)
-__ramfunc static HAL_StatusTypeDef OPENBL_FLASH_WaitForLastOperation(uint32_t Timeout)
-#else
-__attribute__((section(".ramfunc"))) static HAL_StatusTypeDef OPENBL_FLASH_WaitForLastOperation(uint32_t Timeout)
-#endif /* (__ICCARM__) */
-{
-	return HAL_OK;
-}
+//#if defined (__ICCARM__)
+//__ramfunc static HAL_StatusTypeDef OPENBL_FLASH_WaitForLastOperation(uint32_t Timeout)
+//#else
+//__attribute__((section(".ramfunc"))) static HAL_StatusTypeDef OPENBL_FLASH_WaitForLastOperation(uint32_t Timeout)
+//#endif /* (__ICCARM__) */
+//{
+//	return HAL_OK;
+//}
 
 /**
   * @brief  Perform a mass erase or erase the specified FLASH memory pages.

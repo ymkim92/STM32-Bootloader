@@ -111,9 +111,9 @@ void OpenBootloader_Init(void)
 
   /* Initialise memories */
   OPENBL_MEM_RegisterMemory(&FLASH_Descriptor);
-//  OPENBL_MEM_RegisterMemory(&RAM_Descriptor);
-//  OPENBL_MEM_RegisterMemory(&OB1_Descriptor);
-//  OPENBL_MEM_RegisterMemory(&OB2_Descriptor);
+  // OPENBL_MEM_RegisterMemory(&RAM_Descriptor);
+  OPENBL_MEM_RegisterMemory(&OB_Descriptor);
+  // OPENBL_MEM_RegisterMemory(&OB2_Descriptor);
 //  OPENBL_MEM_RegisterMemory(&OTP_Descriptor);
 //  OPENBL_MEM_RegisterMemory(&ICP1_Descriptor);
 //  OPENBL_MEM_RegisterMemory(&ICP2_Descriptor);

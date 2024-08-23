@@ -103,9 +103,11 @@ int main(void)
 
   OpenBootloader_Init();
 
+//  OPENBL_MEM_JumpToAddress(0x08040000);
+ 
+
   /* Infinite loop */
-  while (true)
-  {
+  while (true) {
     OpenBootloader_ProtocolDetection();
   }
   
@@ -162,7 +164,7 @@ int main(void)
   }
   /* USER CODE END 3 */
 #endif
-}
+  }
 
 /**
   * @brief System Clock Configuration

@@ -60,7 +60,7 @@ typedef struct
 {
   __IO FLASH_ProcedureTypeDef ProcedureOnGoing;   /* Internal variable to indicate which procedure is ongoing or not in IT context */
 
-  __IO uint32_t               NbSectorsToErase;   /* Internal variable to save the remaining sectors to erase in IT context        */
+  __IO uint32_t               NbSectorsToErase;   /* Internal variab-le to save the remaining sectors to erase in IT context        */
 
   __IO uint8_t                VoltageForErase;    /* Internal variable to provide voltage range selected by user in IT context     */
 
