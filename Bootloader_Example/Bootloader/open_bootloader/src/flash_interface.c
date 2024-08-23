@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "platform.h"
 #include "openbl_mem.h"
+#include "openbl_core.h"
 #include "app_openbootloader.h"
 #include "common_interface.h"
 #include "flash_interface.h"
@@ -32,14 +33,15 @@
 uint32_t Flash_BusyState = FLASH_BUSY_STATE_DISABLED;
 FLASH_ProcessTypeDef FlashProcess = {};
 
-//FLASH_ProcessTypeDef FlashProcess = {.Lock = HAL_UNLOCKED, \
-//                                     .ErrorCode = HAL_FLASH_ERROR_NONE, \
-//                                     .ProcedureOnGoing = 0U, \
-//                                     .Address = 0U, \
-//                                     .Bank = FLASH_BANK_1, \
-//                                     .Page = 0U, \
-//                                     .NbPagesToErase = 0U
-//                                    };
+/* FLASH_ProcessTypeDef FlashProcess = {.Lock = HAL_UNLOCKED, \
+                                     .ErrorCode = HAL_FLASH_ERROR_NONE, \
+                                     .ProcedureOnGoing = 0U, \
+                                     .Address = 0U, \
+                                     .Bank = FLASH_BANK_1, \
+                                     .Page = 0U, \
+                                     .NbPagesToErase = 0U
+                                    };
+                                    */
 
 /* Private function prototypes -----------------------------------------------*/
 static void OPENBL_FLASH_ProgramQuadWord(uint32_t Address, uint32_t Data);
@@ -343,12 +345,12 @@ ErrorStatus OPENBL_FLASH_MassErase(uint8_t *p_Data, uint32_t DataLength)
   */
 ErrorStatus OPENBL_FLASH_Erase(uint8_t *p_Data, uint32_t DataLength)
 {
-  uint32_t counter;
-  uint32_t pages_number;
-  uint32_t page_error;
+//  uint32_t counter;
+//  uint32_t pages_number;
+//  uint32_t page_error;
   uint32_t errors = 0U;
   ErrorStatus status = SUCCESS;
-  FLASH_EraseInitTypeDef erase_init_struct;
+//  FLASH_EraseInitTypeDef erase_init_struct;
 
   /* Unlock the flash memory for erase operation */
   OPENBL_FLASH_Unlock();
@@ -356,7 +358,7 @@ ErrorStatus OPENBL_FLASH_Erase(uint8_t *p_Data, uint32_t DataLength)
   /* Clear error programming flags */
   __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
 
-  pages_number  = (uint32_t)(*(uint16_t *)(p_Data));
+//  pages_number  = (uint32_t)(*(uint16_t *)(p_Data));
   p_Data       += 2;
 
 //  erase_init_struct.TypeErase = FLASH_TYPEERASE_PAGES;

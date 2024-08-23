@@ -46,9 +46,9 @@ static void OPENBL_USART_Init(void)
 
 //  USART_InitStruct.PrescalerValue      = LL_USART_PRESCALER_DIV1;
   USART_InitStruct.BaudRate            = 115200U;
-  USART_InitStruct.DataWidth           = LL_USART_DATAWIDTH_9B;
+  USART_InitStruct.DataWidth           = LL_USART_DATAWIDTH_8B;
   USART_InitStruct.StopBits            = LL_USART_STOPBITS_1;
-  USART_InitStruct.Parity              = LL_USART_PARITY_EVEN;
+  USART_InitStruct.Parity              = LL_USART_PARITY_NONE;
   USART_InitStruct.HardwareFlowControl = LL_USART_HWCONTROL_NONE;
   USART_InitStruct.TransferDirection   = LL_USART_DIRECTION_TX_RX;
   USART_InitStruct.OverSampling        = LL_USART_OVERSAMPLING_16;
@@ -65,6 +65,7 @@ static void OPENBL_USART_Init(void)
   }
 
   LL_USART_Init(USARTx, &USART_InitStruct);
+  LL_USART_ConfigAsyncMode(USARTx);
   LL_USART_Enable(USARTx);
 }
 
@@ -80,10 +81,10 @@ void OPENBL_USART_Configuration(void)
 
   /* Enable all resources clocks ---------------------------------------------*/
   /* Enable used GPIOx clocks */
-  __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /* Enable USART clock */
-  __HAL_RCC_USART1_CLK_ENABLE();
+  __HAL_RCC_USART3_CLK_ENABLE();
 
   /* USARTx pins configuration -----------------------------------------------*/
 
@@ -166,7 +167,7 @@ uint8_t OPENBL_USART_GetCommandOpcode(void)
   */
 uint8_t OPENBL_USART_ReadByte(void)
 {
-  while (!LL_USART_IsActiveFlag_RXNE_RXFNE(USARTx))
+  while (!LL_USART_IsActiveFlag_RXNE(USARTx))
   {
     OPENBL_IWDG_Refresh();
   }
@@ -181,6 +182,9 @@ uint8_t OPENBL_USART_ReadByte(void)
   */
 void OPENBL_USART_SendByte(uint8_t Byte)
 {
+	if (Byte == NACK_BYTE) {
+		HAL_Delay(1);
+	}
   LL_USART_TransmitData8(USARTx, (Byte & 0xFF));
 
   while (!LL_USART_IsActiveFlag_TC(USARTx))

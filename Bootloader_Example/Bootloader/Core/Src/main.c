@@ -22,8 +22,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <stdio.h>
+#include <stdbool.h>
 #include "etx_ota_update.h"
+#include "app_openbootloader.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -52,10 +53,10 @@ const uint8_t BL_Version[2] = { MAJOR, MINOR };
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_USART3_UART_Init(void);
-static void MX_USART2_UART_Init(void);
+// static void MX_USART3_UART_Init(void);
+// static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
-static void goto_application( void );
+//static void goto_application( void );
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -91,13 +92,13 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_USART3_UART_Init();
-  // TODO remove usart2
+  // TODO remove usarts
+  // MX_USART3_UART_Init();
   // MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
   // Turn ON the Green Led to tell the user that Bootloader is running
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET );    //Green LED ON
-  printf("Starting Bootloader(%d.%d)\r\n", BL_Version[0], BL_Version[1] );
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET );    // Green LED ON
+  // printf("Starting Bootloader(%d.%d)\r\n", BL_Version[0], BL_Version[1] );
   //HAL_Delay(2000);   //2sec delay for nothing
 
   OpenBootloader_Init();
@@ -126,7 +127,6 @@ int main(void)
       break;
     }
   }while( 1 );
-#endif
 
   /*Start the Firmware or Application update */
   if( OTA_Pin_state == GPIO_PIN_SET )
@@ -161,6 +161,7 @@ int main(void)
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
+#endif
 }
 
 /**
@@ -210,6 +211,7 @@ void SystemClock_Config(void)
   }
 }
 
+#if 0
 /**
   * @brief USART2 Initialization Function
   * @param None
@@ -279,7 +281,7 @@ static void MX_USART3_UART_Init(void)
   /* USER CODE END USART3_Init 2 */
 
 }
-
+#endif
 /**
   * @brief GPIO Initialization Function
   * @param None
@@ -332,6 +334,7 @@ int fputc(int ch, FILE *f)
   return ch;
 }
 
+#if 0
 /**
   * @brief Jump to application from the Bootloader
   * @retval None
@@ -356,6 +359,7 @@ static void goto_application(void)
   /* Jump to application */
   app_reset_handler();    //call the app reset handler
 }
+#endif
 /* USER CODE END 4 */
 
 /**
@@ -389,5 +393,10 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
+
+void System_DeInit(void)
+{
+  HAL_RCC_DeInit();
+}
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
