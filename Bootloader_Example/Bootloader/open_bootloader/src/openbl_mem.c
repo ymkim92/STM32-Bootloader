@@ -312,7 +312,7 @@ ErrorStatus OPENBL_MEM_Erase(uint32_t Address, uint8_t *p_Data, uint32_t DataLen
   {
     if (a_MemoriesTable[memory_index].Erase != NULL)
     {
-      status = a_MemoriesTable[memory_index].Erase(p_Data, DataLength);
+      status = a_MemoriesTable[memory_index].Erase(Address, p_Data, DataLength);
     }
     else
     {

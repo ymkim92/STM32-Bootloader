@@ -142,6 +142,8 @@ void OPENBL_FLASH_Write(uint32_t Address, uint8_t *Data, uint32_t DataLength)
   /* Unlock the flash memory for write operation */
   OPENBL_FLASH_Unlock();
 
+  EraseFlash(Address, DataLength);
+
   for (index = 0U; index < length; (index += 8U))
   {
     OPENBL_FLASH_ProgramDoubleWord((Address + index), (uint32_t)((Data + index)));
@@ -353,7 +355,7 @@ ErrorStatus OPENBL_FLASH_Erase(uint32_t Address, uint8_t *p_Data, uint32_t DataL
 //    EraseInitStruct.NbSectors = (DataLength / FLASH_SECTOR_SIZE) + 1; // Number of sectors to erase
 
     // Perform the erase operation
-    status = HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError);
+    // status = HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError);
 
     // Lock the Flash to disable the flash control register access
     HAL_FLASH_Lock();
@@ -609,4 +611,42 @@ __attribute__((section(".ramfunc"))) static HAL_StatusTypeDef OPENBL_FLASH_Exten
 //  }
 //
 //  return status;
+}
+
+// It assume it uses 2 Mbytes single bank Flash
+static ErrorStatus EraseFlash(uint32_t Address, uint32_t DataLength)
+{
+  FLASH_EraseInitTypeDef EraseInitStruct;
+  uint32_t SectorError = 0;
+  HAL_StatusTypeDef status;
+
+  /* Unlock the flash memory for erase operation */
+  OPENBL_FLASH_Unlock();
+
+  /* Clear error programming flags */
+  __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
+
+  // Fill EraseInit structure
+  EraseInitStruct.TypeErase = FLASH_TYPEERASE_SECTORS;
+  EraseInitStruct.VoltageRange =
+      FLASH_VOLTAGE_RANGE_3; // Choose voltage range according to your
+                             // requirements
+  EraseInitStruct.Sector = FLASH_SECTOR_5; // Start sector to erase
+  //    EraseInitStruct.NbSectors = (DataLength / FLASH_SECTOR_SIZE) + 1; //
+  //    Number of sectors to erase
+
+  // Perform the erase operation
+  // status = HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError);
+
+  // Lock the Flash to disable the flash control register access
+  HAL_FLASH_Lock();
+
+  // Check if erase operation was successful
+  if (status != HAL_OK) {
+    // If the erase operation failed, return an error
+    return ERROR;
+  }
+
+  // If the erase operation was successful, return success
+  return SUCCESS;
 }

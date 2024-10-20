@@ -36,7 +36,7 @@ typedef struct
   ErrorStatus(*SetWriteProtect)(FunctionalState State, uint8_t *Buffer, uint32_t Length);
   void (*JumpToAddress)(uint32_t Address);
   ErrorStatus(*MassErase)(uint8_t *p_Data, uint32_t DataLength);
-  ErrorStatus(*Erase)(uint8_t *p_Data, uint32_t DataLength);
+  ErrorStatus(*Erase)(uint32_t Address, uint8_t *p_Data, uint32_t DataLength);
 } OPENBL_MemoryTypeDef;
 
 /* Exported constants --------------------------------------------------------*/
